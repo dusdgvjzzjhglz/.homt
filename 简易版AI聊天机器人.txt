@@ -1,0 +1,82 @@
+import random
+import requests
+import json
+import os
+
+def get_weather(city):
+    """
+    根据城市名称查询天气信息。
+    使用和风天气的免费API，需要申请Key
+    """
+    api_key = os.environ.get('WEATHER_API_KEY')  # 尝试从环境变量中读取 API Key
+    if not api_key:
+        print("请设置 WEATHER_API_KEY 环境变量。")
+        return None
+
+    url = f"https://devapi.qweather.com/v7/weather/now?location={city}&key={api_key}"
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # 检查请求是否成功
+        data = response.json()
+        if data['code'] == '200':
+            weather_data = data['now']
+            return f"当前{city}的天气：{weather_data['text']}，温度：{weather_data['temp']}℃。"
+        else:
+            return "天气查询失败，请稍后再试。"
+    except requests.exceptions.RequestException as e:
+        print(f"天气查询出现错误: {e}")
+        return "天气查询失败，请稍后再试。"
+
+
+def get_joke():
+    """随机返回一个笑话。"""
+    jokes = [
+        "为什么程序员喜欢用黑色？因为黑色能使他们的代码运行起来更快。",
+        "为什么程序员总是戴着耳机？因为他们听着Bug在唱歌。",
+        "一个程序员走到电梯门口，发现电梯上写着 '没有电梯'。他就很生气，说：这是要逼我从头开始写一个电梯吗？",
+        "为什么程序员总是在写 bug? 因为他们不小心把代码写成了 if(true) { ... }",
+        "程序员最大的梦想是什么？写出没有bug的代码。",
+        "老婆给程序员打电话：下班买一斤包子回来，如果看到卖西瓜的，买一个。 程序员：买了一个包子回来。"
+    ]
+    return random.choice(jokes)
+
+
+def chat_bot():
+    """简单的聊天机器人主逻辑"""
+    print("你好！我是聊天机器人，很高兴为你服务。")
+    while True:
+        user_input = input("你: ")
+        user_input = user_input.strip()
+
+        if user_input.lower() == "退出":
+            print("再见！")
+            break
+
+        elif "天气" in user_input:
+          city =  re.search(r"天气(.*)", user_input)
+          if city:
+            weather = get_weather(city.group(1).strip())
+            if weather:
+                print("机器人: " + weather)
+            else:
+                print("机器人：无法查询天气。")
+          else:
+            print("机器人: 请告诉我你要查询哪个城市的天气?")
+
+
+        elif "笑话" in user_input:
+            print("机器人: " + get_joke())
+
+        elif user_input.lower() == "你好":
+          print("机器人： 你好呀！有什么可以帮你的吗?")
+        
+        elif user_input.lower() == "你是谁":
+          print("机器人： 我是一个简单的聊天机器人。")
+
+        else:
+            print("机器人: 抱歉，我不太明白你在说什么。可以问我天气或者笑话哦")
+
+if __name__ == "__main__":
+    import re
+    chat_bot()
